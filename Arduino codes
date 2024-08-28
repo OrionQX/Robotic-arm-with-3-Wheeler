@@ -1,0 +1,128 @@
+# Robotic-arm-with-3-Wheeler
+#include <Servo.h> 
+
+// Servo motor nesneleri
+Servo myservo1, myservo2, myservo3, myservo4;
+
+// Motor kontrol pinleri
+const int motor1Pin1 = 9;
+const int motor1Pin2 = 7;
+const int motor2Pin1 = 8;
+const int motor2Pin2 = 10;
+const int enA = 11;
+const int enB = 6;
+
+// Hız değişkeni
+int hiz = 155;
+
+// Gelen seri veriyi depolamak için değişkenler
+byte serialA;
+
+void setup() {
+    // Servo motor pinlerini ayarla
+    myservo1.attach(2);
+    myservo2.attach(3);
+    myservo3.attach(4);
+    myservo4.attach(5);
+
+    // Servo motorları başlangıç pozisyonuna ayarla
+    myservo1.write(90);
+    myservo2.write(90);
+    myservo3.write(90);
+    myservo4.write(90);
+
+    // Seri iletişimi başlat
+    Serial.begin(9600);
+
+    // Motor hızlarını ayarla
+    analogWrite(enA, hiz);
+    analogWrite(enB, hiz);
+
+    // Motor pinlerini çıkış olarak ayarla
+    pinMode(motor1Pin1, OUTPUT); // sağ ileri
+    pinMode(motor1Pin2, OUTPUT); // sağ geri
+    pinMode(motor2Pin1, OUTPUT); // sol ileri
+    pinMode(motor2Pin2, OUTPUT); // sol geri
+}
+
+void loop() {
+    if (Serial.available() > 4) {
+        serialA = Serial.read();
+        Serial.println(serialA);
+
+        // Servo pozisyonunu okuma ve motorları kontrol etme
+        unsigned int servopos = Serial.read();
+        unsigned int servopos1 = Serial.read();
+        unsigned int realservo = (servopos1 * 256) + servopos; 
+        Serial.println(realservo);
+
+        // Servo motorlarını kontrol et
+        if (realservo >= 1000 && realservo < 1180) {
+            myservo1.write(map(realservo, 1000, 1180, 0, 180));
+            Serial.println("servo 1 ON");
+        } 
+        else if (realservo >= 2000 && realservo < 2180) {
+            myservo2.write(map(realservo, 2000, 2180, 0, 180));
+            Serial.println("servo 2 ON");
+        } else if (realservo >= 3000 && realservo < 3180) {
+            myservo3.write(map(realservo, 3000, 3180, 0, 180));
+            Serial.println("servo 3 ON");
+        } else if (realservo >= 4000 && realservo < 4180) {
+            myservo4.write(map(realservo, 4000, 4180, 0, 180));
+            Serial.println("servo 4 ON");
+        }
+    }
+
+    if (Serial.available() > 4) {
+        char command = Serial.read();
+
+        switch(command) {
+            case '1':
+                hiz = 255;
+                analogWrite(enA, hiz);
+                analogWrite(enB, hiz);
+                break;
+
+            case '2':
+                hiz = 155;
+                analogWrite(enA, hiz);
+                analogWrite(enB, hiz);
+                break;
+
+            case 'S':
+                digitalWrite(motor1Pin1, HIGH);
+                digitalWrite(motor1Pin2, LOW);
+                digitalWrite(motor2Pin1, HIGH);
+                digitalWrite(motor2Pin2, LOW);
+                break;
+
+            case 'W':
+                digitalWrite(motor1Pin1, LOW);
+                digitalWrite(motor1Pin2, HIGH);
+                digitalWrite(motor2Pin1, LOW);
+                digitalWrite(motor2Pin2, HIGH);
+                break;
+
+            case 'A':
+                digitalWrite(motor1Pin1, LOW);
+                digitalWrite(motor1Pin2, HIGH);
+                digitalWrite(motor2Pin1, LOW);
+                digitalWrite(motor2Pin2, LOW);
+                break;
+
+            case 'D':
+                digitalWrite(motor1Pin1, LOW);
+                digitalWrite(motor1Pin2, LOW);
+                digitalWrite(motor2Pin1, LOW);
+                digitalWrite(motor2Pin2, HIGH);
+                break;
+
+            case '-':
+                digitalWrite(motor1Pin1, LOW);
+                digitalWrite(motor1Pin2, LOW);
+                digitalWrite(motor2Pin1, LOW);
+                digitalWrite(motor2Pin2, LOW);
+                break;
+        }
+    }
+}
